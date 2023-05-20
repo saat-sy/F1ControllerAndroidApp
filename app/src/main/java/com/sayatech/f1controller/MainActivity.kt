@@ -1,9 +1,10 @@
 package com.sayatech.f1controller
 
 import android.graphics.PointF
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Bundle
 import android.view.MotionEvent
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -12,14 +13,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,9 +26,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.tooling.preview.Devices
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.constraintlayout.widget.ConstraintSet.Motion
 import com.sayatech.f1controller.ui.theme.F1ControllerTheme
 import com.sayatech.f1controller.views.ConnectionDialog
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -37,13 +33,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @OptIn(DelicateCoroutinesApi::class, ExperimentalComposeUiApi::class)
 class MainActivity : ComponentActivity() {
     private lateinit var socketHandler: SocketHandler
     private var height: Float = 0f
     private var width: Float = 0f
+    private lateinit var sensorManager: SensorManager
+    private lateinit var sensor: Sensor
+    private lateinit var sensorChannel: SensorChannel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +57,11 @@ class MainActivity : ComponentActivity() {
         }
 
         socketHandler = SocketHandler()
+
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        sensorChannel = SensorChannel(socketHandler)
+        sensorChannel.process()
     }
 
     @Composable
@@ -85,6 +88,7 @@ class MainActivity : ComponentActivity() {
                                     ConnectionStatus.NOT_CONNECTED
                                 }
                             )
+                            registerOrientationListener()
                             dialogStatus.value = false
                         }
                     },
@@ -101,7 +105,8 @@ class MainActivity : ComponentActivity() {
         dialogStatus: MutableState<Boolean>
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .pointerInteropFilter {
                     handlePress(it)
                     true
@@ -113,7 +118,9 @@ class MainActivity : ComponentActivity() {
             horizontalAlignment = Alignment.End
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().fillMaxHeight(0.4f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.4f),
                 horizontalArrangement = Arrangement.SpaceEvenly,
 
             ) {
@@ -149,7 +156,9 @@ class MainActivity : ComponentActivity() {
                 Text(text = socketHandler.getStatus().toString())
             }
             Row(
-                modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 TextButton(
@@ -231,5 +240,35 @@ class MainActivity : ComponentActivity() {
                 ACC
             }
         }
+    }
+
+    private fun registerOrientationListener() {
+        if (socketHandler.getStatus() == ConnectionStatus.CONNECTED) {
+            sensorManager.registerListener(
+                sensorChannel,
+                sensor,
+                SensorManager.SENSOR_DELAY_GAME
+            )
+        }
+    }
+
+    private fun unRegisterOrientationListener() {
+        if (socketHandler.getStatus() == ConnectionStatus.CONNECTED) {
+            try {
+                sensorManager.unregisterListener(sensorChannel)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        registerOrientationListener()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unRegisterOrientationListener()
     }
 }

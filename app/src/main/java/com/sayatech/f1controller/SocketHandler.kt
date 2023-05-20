@@ -13,14 +13,19 @@ import java.net.Socket
 class SocketHandler {
 
     private lateinit var client: Socket
+    private lateinit var orientationClient: Socket
     private var status = ConnectionStatus.NOT_CONNECTED
     private lateinit var printWriter: PrintWriter
+    private lateinit var printWriterOrientation: PrintWriter
     suspend fun connect(): Boolean {
         return if (status == ConnectionStatus.CONNECTED) {
             true
         } else {
             try {
                 client = withContext(Dispatchers.IO) {
+                    Socket(IP, PORT)
+                }
+                orientationClient = withContext(Dispatchers.IO) {
                     Socket(IP, PORT)
                 }
                 true
@@ -31,12 +36,17 @@ class SocketHandler {
         }
     }
 
-    private fun sendMessage(data: String) {
+    private fun sendMessage(data: String, messageType: MessageType) {
         GlobalScope.launch(Dispatchers.IO) {
-            printWriter = PrintWriter(client.getOutputStream(), true)
-
-            printWriter.write(data)
-            printWriter.flush()
+            if (messageType == MessageType.BUTTON) {
+                printWriter = PrintWriter(client.getOutputStream(), true)
+                printWriter.write(data)
+                printWriter.flush()
+            } else {
+                printWriterOrientation = PrintWriter(orientationClient.getOutputStream(), true)
+                printWriterOrientation.write(data)
+                printWriterOrientation.flush()
+            }
         }
     }
 
@@ -47,17 +57,23 @@ class SocketHandler {
     fun disconnect() {
         runBlocking {
             launch(Dispatchers.IO) {
-                val printWriter = PrintWriter(client.getOutputStream(), true)
                 printWriter.write(DISCONNECT_MESSAGE)
                 printWriter.flush()
                 printWriter.close()
+
+                printWriterOrientation.write(DISCONNECT_MESSAGE)
+                printWriterOrientation.flush()
+                printWriterOrientation.close()
             }
         }
         status = ConnectionStatus.NOT_CONNECTED
         if (this::printWriter.isInitialized) {
             printWriter.close()
+        } else if (this::printWriterOrientation.isInitialized) {
+            printWriterOrientation.close()
         }
         client.close()
+        orientationClient.close()
     }
 
     fun setStatus(c: ConnectionStatus) {
@@ -65,12 +81,20 @@ class SocketHandler {
     }
 
     fun buttonPress(id: Int, state: Boolean) {
-//        println("$id $state")
-        sendMessage("$BUTTON_KEY,$id,${if (state) 1 else 0}")
+        sendMessage("$BUTTON_KEY,$id,${if (state) 1 else 0}", MessageType.BUTTON)
+    }
+
+    fun orientationChange(d: Double) {
+        sendMessage("$ORIENTATION_KEY,$d,", MessageType.ORIENTATION)
     }
 }
 
 enum class ConnectionStatus {
     CONNECTED,
     NOT_CONNECTED
+}
+
+enum class MessageType {
+    BUTTON,
+    ORIENTATION
 }
