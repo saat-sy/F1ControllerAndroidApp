@@ -18,7 +18,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -97,13 +96,11 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        Controller(dialogStatus)
+        Controller()
     }
 
     @Composable
-    fun Controller(
-        dialogStatus: MutableState<Boolean>
-    ) {
+    fun Controller() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -142,18 +139,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Text(text = "Gear Up")
                 }
-            }
-            TextButton(
-                onClick = {
-                    if (socketHandler.getStatus() == ConnectionStatus.NOT_CONNECTED) {
-                        dialogStatus.value = true
-                    } else {
-                        socketHandler.disconnect()
-                        dialogStatus.value = true
-                    }
-                },
-            ) {
-                Text(text = socketHandler.getStatus().toString())
             }
             Row(
                 modifier = Modifier
