@@ -1,5 +1,6 @@
 package com.sayatech.f1controller
 
+import android.content.SharedPreferences
 import android.graphics.PointF
 import android.hardware.Sensor
 import android.hardware.SensorManager
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var sensorManager: SensorManager
     private lateinit var sensor: Sensor
     private lateinit var sensorChannel: SensorChannel
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +57,10 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        socketHandler = SocketHandler()
+        sharedPreferences = getSharedPreferences(SHARED_KEY, MODE_PRIVATE)
+        socketHandler = SocketHandler(
+            sharedPreferences.getString(IP_KEY, "")!!
+        )
 
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
@@ -91,7 +96,7 @@ class MainActivity : ComponentActivity() {
                             dialogStatus.value = false
                         }
                     },
-                    progressState.value
+                    sharedPreferences
                 )
             }
         }

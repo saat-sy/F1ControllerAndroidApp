@@ -10,7 +10,9 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 
 @OptIn(DelicateCoroutinesApi::class)
-class SocketHandler {
+class SocketHandler(
+    private val IP: String
+) {
 
     private lateinit var client: DatagramSocket
     private var status = ConnectionStatus.NOT_CONNECTED
@@ -28,6 +30,7 @@ class SocketHandler {
                     withContext(Dispatchers.IO) {
                         InetAddress.getByName(IP)
                     }
+                status = ConnectionStatus.CONNECTED
                 true
             } catch (e: Exception) {
                 e.printStackTrace()
