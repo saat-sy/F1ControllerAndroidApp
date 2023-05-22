@@ -249,18 +249,18 @@ class MainActivity : ComponentActivity() {
         // Weight is 3
         val minBlockSize = width / (3 + 3 + 1)
         return if (point.y < 0.4 * height) {
-            if (point.x < 3 * minBlockSize) {
-                G_DOWN
-            } else if (point.x >= (3 * minBlockSize) && point.x < (4 * minBlockSize)) {
+            if (point.x < 1 * minBlockSize) {
                 KERS
+            } else if (point.x >= (1 * minBlockSize) && point.x < (4 * minBlockSize)) {
+                G_DOWN
             } else {
                 G_UP
             }
         } else {
-            if (point.x < 3 * minBlockSize) {
-                BRAKE
-            } else if (point.x >= (3 * minBlockSize) && point.x < (4 * minBlockSize)) {
+            if (point.x < 1 * minBlockSize) {
                 DRS
+            } else if (point.x >= (1 * minBlockSize) && point.x < (4 * minBlockSize)) {
+                BRAKE
             } else {
                 ACC
             }
