@@ -26,6 +26,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import com.sayatech.f1controller.ui.theme.F1ControllerTheme
 import com.sayatech.f1controller.views.ConnectionDialog
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -130,8 +132,7 @@ class MainActivity : ComponentActivity() {
                     onClick = {},
                     modifier = Modifier
                         .fillMaxHeight()
-                        .fillMaxWidth(0.5f)
-                        .weight(1f)
+                        .weight(3f)
                 ) {
                     Text(text = "Gear Down")
                 }
@@ -139,8 +140,15 @@ class MainActivity : ComponentActivity() {
                     onClick = {},
                     modifier = Modifier
                         .fillMaxHeight()
-                        .fillMaxWidth(0.5f)
                         .weight(1f)
+                ) {
+                    Text(text = "Kers")
+                }
+                TextButton(
+                    onClick = {},
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(3f)
                 ) {
                     Text(text = "Gear Up")
                 }
@@ -155,8 +163,7 @@ class MainActivity : ComponentActivity() {
                     onClick = {},
                     modifier = Modifier
                         .fillMaxHeight()
-                        .fillMaxWidth(0.5f)
-                        .weight(1f)
+                        .weight(3f)
                 ) {
                     Text(text = "Brake")
                 }
@@ -164,8 +171,15 @@ class MainActivity : ComponentActivity() {
                     onClick = {},
                     modifier = Modifier
                         .fillMaxHeight()
-                        .fillMaxWidth(0.5f)
                         .weight(1f)
+                ) {
+                    Text(text = "DRS")
+                }
+                TextButton(
+                    onClick = {},
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(3f)
                 ) {
                     Text(text = "Accelerate")
                 }
@@ -217,15 +231,21 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun getIdFromCoordinates(point: PointF): Int {
+        // Weight is 3
+        val minBlockSize = width / (3 + 3 + 1)
         return if (point.y < 0.4 * height) {
-            if (point.x < 0.5 * width) {
+            if (point.x < 3 * minBlockSize) {
                 G_DOWN
+            } else if (point.x >= (3 * minBlockSize) && point.x < (4 * minBlockSize)) {
+                KERS
             } else {
                 G_UP
             }
         } else {
-            if (point.x < 0.5 * width) {
+            if (point.x < 3 * minBlockSize) {
                 BRAKE
+            } else if (point.x >= (3 * minBlockSize) && point.x < (4 * minBlockSize)) {
+                DRS
             } else {
                 ACC
             }
@@ -260,5 +280,11 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         unRegisterOrientationListener()
+    }
+
+    @Preview(showBackground = true, device = Devices.AUTOMOTIVE_1024p, widthDp = 720, heightDp = 360)
+    @Composable
+    fun User() {
+        UserInterface()
     }
 }

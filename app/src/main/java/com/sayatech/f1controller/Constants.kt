@@ -8,6 +8,8 @@ const val ACC = 1
 const val BRAKE = 2
 const val G_UP = 3
 const val G_DOWN = 4
+const val KERS = 5
+const val DRS = 6
 
 const val BUTTON_KEY = "B"
 const val ORIENTATION_KEY = "O"
