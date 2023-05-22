@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,6 +30,7 @@ import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.sayatech.f1controller.ui.theme.F1ControllerTheme
 import com.sayatech.f1controller.views.ConnectionDialog
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -132,17 +135,23 @@ class MainActivity : ComponentActivity() {
                     onClick = {},
                     modifier = Modifier
                         .fillMaxHeight()
-                        .weight(3f)
+                        .weight(1f)
                 ) {
-                    Text(text = "Gear Down")
+                    Text(text = "Kers")
                 }
+                Divider(
+                    color = Color.White,
+                    modifier = Modifier
+                        .fillMaxHeight()  //fill the max height
+                        .width(1.dp)
+                )
                 TextButton(
                     onClick = {},
                     modifier = Modifier
                         .fillMaxHeight()
-                        .weight(1f)
+                        .weight(3f)
                 ) {
-                    Text(text = "Kers")
+                    Text(text = "Gear Down")
                 }
                 TextButton(
                     onClick = {},
@@ -163,17 +172,23 @@ class MainActivity : ComponentActivity() {
                     onClick = {},
                     modifier = Modifier
                         .fillMaxHeight()
-                        .weight(3f)
+                        .weight(1f)
                 ) {
-                    Text(text = "Brake")
+                    Text(text = "DRS")
                 }
+                Divider(
+                    color = Color.White,
+                    modifier = Modifier
+                        .fillMaxHeight()  //fill the max height
+                        .width(1.dp)
+                )
                 TextButton(
                     onClick = {},
                     modifier = Modifier
                         .fillMaxHeight()
-                        .weight(1f)
+                        .weight(3f)
                 ) {
-                    Text(text = "DRS")
+                    Text(text = "Brake")
                 }
                 TextButton(
                     onClick = {},
