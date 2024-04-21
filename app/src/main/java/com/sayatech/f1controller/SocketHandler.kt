@@ -68,8 +68,8 @@ class SocketHandler(
         sendMessage("$BUTTON_KEY,$id,${if (state) 1 else 0}")
     }
 
-    fun orientationChange(d: Double) {
-        sendMessage("$ORIENTATION_KEY,$d,")
+    fun orientationChange(d: Double, a: Float) {
+        sendMessage("$ORIENTATION_KEY,$d,$ACCELERATION_KEY,$a,")
     }
 }
 

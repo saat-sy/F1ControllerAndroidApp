@@ -27,7 +27,7 @@ class SensorChannel(
 
     private fun offer(event: SensorEvent) = runBlocking { events.send(event) }
 
-    fun process() = scope.launch {
+    fun process(buttonValueCallback: () -> Float) = scope.launch {
         events.consumeEach {
             val rotationMatrix = FloatArray(16)
             SensorManager.getRotationMatrixFromVector(rotationMatrix, it.values)
@@ -40,9 +40,11 @@ class SensorChannel(
             )
             val orientations = FloatArray(3)
             SensorManager.getOrientation(remappedRotationMatrix, orientations)
+            val buttonValue = buttonValueCallback()
             socketHandler.orientationChange(
                 round((
-                    orientations[2] + ORIENTATION_BIAS) * 1000.0) / 1000.0
+                    orientations[2] + ORIENTATION_BIAS) * 1000.0) / 1000.0,
+                buttonValue
             )
         }
     }

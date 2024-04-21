@@ -44,6 +44,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var socketHandler: SocketHandler
     private var height: Float = 0f
     private var width: Float = 0f
+    private var accelerationValue: Float = 0f
     private lateinit var sensorManager: SensorManager
     private lateinit var sensor: Sensor
     private lateinit var sensorChannel: SensorChannel
@@ -70,7 +71,7 @@ class MainActivity : ComponentActivity() {
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
         sensorChannel = SensorChannel(socketHandler)
-        sensorChannel.process()
+        sensorChannel.process(accelerationCallback)
     }
 
     @Composable
@@ -111,7 +112,7 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun Controller() {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxSize()
                 .pointerInteropFilter {
@@ -122,14 +123,13 @@ class MainActivity : ComponentActivity() {
                     height = it.size.height.toFloat()
                     width = it.size.width.toFloat()
                 },
-            horizontalAlignment = Alignment.End
         ) {
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.4f),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-
+                    .fillMaxWidth(fraction = 0.15f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TextButton(
                     onClick = {},
@@ -139,35 +139,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Text(text = "Kers")
                 }
-                Divider(
-                    color = Color.White,
-                    modifier = Modifier
-                        .fillMaxHeight()  //fill the max height
-                        .width(1.dp)
-                )
-                TextButton(
-                    onClick = {},
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(3f)
-                ) {
-                    Text(text = "Gear Down")
-                }
-                TextButton(
-                    onClick = {},
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(3f)
-                ) {
-                    Text(text = "Gear Up")
-                }
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
                 TextButton(
                     onClick = {},
                     modifier = Modifier
@@ -176,28 +147,28 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Text(text = "DRS")
                 }
-                Divider(
-                    color = Color.White,
-                    modifier = Modifier
-                        .fillMaxHeight()  //fill the max height
-                        .width(1.dp)
-                )
-                TextButton(
-                    onClick = {},
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(3f)
-                ) {
-                    Text(text = "Brake")
-                }
-                TextButton(
-                    onClick = {},
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(3f)
-                ) {
-                    Text(text = "Accelerate")
-                }
+            }
+            Divider(
+                color = Color.White,
+                modifier = Modifier
+                    .fillMaxHeight()  //fill the max height
+                    .width(1.dp)
+            )
+            TextButton(
+                onClick = {},
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(3f)
+            ) {
+                Text(text = "Brake")
+            }
+            TextButton(
+                onClick = {},
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(3f)
+            ) {
+                Text(text = "Accelerate")
             }
         }
     }
@@ -205,14 +176,14 @@ class MainActivity : ComponentActivity() {
     private fun handlePress(event: MotionEvent) {
         when(event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                val index = getIdFromCoordinates(PointF(event.x, event.y))
+                val index = getIdFromCoordinates(PointF(event.x, event.y), true)
                 socketHandler.buttonPress(
                     index,
                     true
                 )
             }
             MotionEvent.ACTION_UP -> {
-                val index = getIdFromCoordinates(PointF(event.x, event.y))
+                val index = getIdFromCoordinates(PointF(event.x, event.y), false)
                 socketHandler.buttonPress(
                     index,
                     false
@@ -223,7 +194,7 @@ class MainActivity : ComponentActivity() {
                     PointF(
                         event.getX(event.actionIndex),
                         event.getY(event.actionIndex)
-                    )
+                    ), true
                 )
                 socketHandler.buttonPress(
                     index,
@@ -235,36 +206,52 @@ class MainActivity : ComponentActivity() {
                     PointF(
                         event.getX(event.actionIndex),
                         event.getY(event.actionIndex)
-                    )
+                    ), false
                 )
                 socketHandler.buttonPress(
                     index,
                     false
                 )
             }
+            MotionEvent.ACTION_MOVE -> {
+                updateAcceleration(PointF(event.x, event.y))
+            }
         }
     }
 
-    private fun getIdFromCoordinates(point: PointF): Int {
-        // Weight is 3
-        val minBlockSize = width / (3 + 3 + 1)
-        return if (point.y < 0.4 * height) {
-            if (point.x < 1 * minBlockSize) {
+    private fun getIdFromCoordinates(point: PointF, state: Boolean): Int {
+        return if (point.x < 0.15 * width) {
+            if (point.y < 0.5 * height) {
                 KERS
-            } else if (point.x >= (1 * minBlockSize) && point.x < (4 * minBlockSize)) {
-                G_DOWN
             } else {
-                G_UP
+                DRS
             }
         } else {
-            if (point.x < 1 * minBlockSize) {
-                DRS
-            } else if (point.x >= (1 * minBlockSize) && point.x < (4 * minBlockSize)) {
+            if (point.x < ((1 - 0.15) / 2 * width)) {
                 BRAKE
             } else {
+                accelerationValue = if (state) {
+                    1f
+                } else {
+                    0f
+                }
                 ACC
             }
         }
+    }
+
+    private fun updateAcceleration(point: PointF) {
+        if (point.x > ((1 - 0.15) / 2 * width)) {
+            accelerationValue = if (point.y > height/2) {
+                if (point.y / height > 0.0f) 1 - point.y / height else 0.0f
+            } else {
+                1.0f
+            }
+        }
+    }
+
+    private val accelerationCallback: () -> Float = {
+        Math.round(accelerationValue * 1000.0) / 1000.0f
     }
 
     private fun registerOrientationListener() {

@@ -13,6 +13,7 @@ const val DRS = 6
 
 const val BUTTON_KEY = "B"
 const val ORIENTATION_KEY = "O"
+const val ACCELERATION_KEY = "A"
 
 const val ORIENTATION_BIAS = 1.5595621
 
