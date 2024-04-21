@@ -231,9 +231,9 @@ class MainActivity : ComponentActivity() {
                 BRAKE
             } else {
                 accelerationValue = if (state) {
-                    1f
+                    1.000f
                 } else {
-                    0f
+                    0.000f
                 }
                 ACC
             }
@@ -242,10 +242,16 @@ class MainActivity : ComponentActivity() {
 
     private fun updateAcceleration(point: PointF) {
         if (point.x > ((1 - 0.15) / 2 * width)) {
-            accelerationValue = if (point.y > height/2) {
-                if (point.y / height > 0.0f) 1 - point.y / height else 0.0f
+            val clippedAcceleration = if (point.y / height > 0.0f) 1 - point.y / height else 0.0f
+            accelerationValue = if (clippedAcceleration <= 0.2) {
+                val newAcceleration = (((clippedAcceleration - 0) * (1 - 0)) / (0.2f - 0f)) + 0
+                if (newAcceleration <= 0) {
+                    0.000f
+                } else {
+                    newAcceleration
+                }
             } else {
-                1.0f
+                1.000f
             }
         }
     }
