@@ -41,6 +41,7 @@ class SocketHandler(
 
     private fun sendMessage(data: String) {
         GlobalScope.launch(Dispatchers.IO) {
+            println(data)
             val buffer = data.toByteArray()
             val packet = DatagramPacket(
                 buffer,

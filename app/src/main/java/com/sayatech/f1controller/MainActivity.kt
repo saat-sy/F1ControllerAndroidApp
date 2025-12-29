@@ -177,10 +177,14 @@ class MainActivity : ComponentActivity() {
         when(event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 val index = getIdFromCoordinates(PointF(event.x, event.y), true)
-                socketHandler.buttonPress(
-                    index,
-                    true
-                )
+                if (index != ACC) {
+                    socketHandler.buttonPress(
+                        index,
+                        true
+                    )
+                } else {
+                    updateAcceleration(PointF(event.x, event.y))
+                }
             }
             MotionEvent.ACTION_UP -> {
                 val index = getIdFromCoordinates(PointF(event.x, event.y), false)
