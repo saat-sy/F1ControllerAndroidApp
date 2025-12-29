@@ -125,39 +125,39 @@ class MainActivity : ComponentActivity() {
             ) {
                 // DPAD Stack
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-                    Row(modifier = Modifier.height(44.dp)) {
-                        Spacer(Modifier.width(44.dp))
-                        ControlButton("▲", Modifier.size(44.dp))
-                        Spacer(Modifier.width(44.dp))
+                    Row(modifier = Modifier.height(60.dp)) {
+                        Spacer(Modifier.width(60.dp))
+                        ControlButton("▲", Modifier.size(60.dp))
+                        Spacer(Modifier.width(60.dp))
                     }
-                    Row(modifier = Modifier.height(44.dp)) {
-                        ControlButton("◀", Modifier.size(44.dp))
-                        Spacer(Modifier.width(44.dp))
-                        ControlButton("▶", Modifier.size(44.dp))
+                    Row(modifier = Modifier.height(60.dp)) {
+                        ControlButton("◀", Modifier.size(60.dp))
+                        Spacer(Modifier.width(60.dp))
+                        ControlButton("▶", Modifier.size(60.dp))
                     }
-                    Row(modifier = Modifier.height(44.dp)) {
-                        Spacer(Modifier.width(44.dp))
-                        ControlButton("▼", Modifier.size(44.dp))
-                        Spacer(Modifier.width(44.dp))
+                    Row(modifier = Modifier.height(60.dp)) {
+                        Spacer(Modifier.width(60.dp))
+                        ControlButton("▼", Modifier.size(60.dp))
+                        Spacer(Modifier.width(60.dp))
                     }
                 }
 
                 // Face Buttons Stack
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-                    Row(modifier = Modifier.height(44.dp)) {
-                        Spacer(Modifier.width(44.dp))
-                        ControlButton("△", Modifier.size(44.dp))
-                        Spacer(Modifier.width(44.dp))
+                    Row(modifier = Modifier.height(60.dp)) {
+                        Spacer(Modifier.width(60.dp))
+                        ControlButton("△", Modifier.size(60.dp))
+                        Spacer(Modifier.width(60.dp))
                     }
-                    Row(modifier = Modifier.height(44.dp)) {
-                        ControlButton("□", Modifier.size(44.dp))
-                        Spacer(Modifier.width(44.dp))
-                        ControlButton("○", Modifier.size(44.dp))
+                    Row(modifier = Modifier.height(60.dp)) {
+                        ControlButton("□", Modifier.size(60.dp))
+                        Spacer(Modifier.width(60.dp))
+                        ControlButton("○", Modifier.size(60.dp))
                     }
-                    Row(modifier = Modifier.height(44.dp)) {
-                        Spacer(Modifier.width(44.dp))
-                        ControlButton("✕", Modifier.size(44.dp))
-                        Spacer(Modifier.width(44.dp))
+                    Row(modifier = Modifier.height(60.dp)) {
+                        Spacer(Modifier.width(60.dp))
+                        ControlButton("✕", Modifier.size(60.dp))
+                        Spacer(Modifier.width(60.dp))
                     }
                 }
             }
@@ -225,7 +225,7 @@ class MainActivity : ComponentActivity() {
             Text(
                 text = label,
                 color = Color.White.copy(alpha = 0.5f),
-                fontSize = 18.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Light
             )
         }
@@ -313,8 +313,8 @@ class MainActivity : ComponentActivity() {
     private fun updateAcceleration(point: PointF) {
         if (point.x > ((1 - 0.15) / 2 * width)) {
             val clippedAcceleration = if (point.y / height > 0.0f) 1 - point.y / height else 0.0f
-            accelerationValue = if (clippedAcceleration <= 0.2) {
-                val newAcceleration = (((clippedAcceleration - 0) * (1 - 0)) / (0.2f - 0f)) + 0
+            accelerationValue = if (clippedAcceleration <= 0.4) {
+                val newAcceleration = (((clippedAcceleration - 0) * (1 - 0)) / (0.4f - 0.05f)) + 0
                 if (newAcceleration <= 0) {
                     0.000f
                 } else {
