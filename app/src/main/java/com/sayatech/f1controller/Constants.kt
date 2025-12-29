@@ -11,6 +11,16 @@ const val G_DOWN = 4
 const val KERS = 5
 const val DRS = 6
 
+const val DPAD_UP = 7
+const val DPAD_DOWN = 8
+const val DPAD_LEFT = 9
+const val DPAD_RIGHT = 10
+
+const val X_BUTTON = 11
+const val TRI_BUTTON = 12
+const val SQ_BUTTON = 13
+const val CIR_BUTTON = 14
+
 const val BUTTON_KEY = "B"
 const val ORIENTATION_KEY = "O"
 const val ACCELERATION_KEY = "A"

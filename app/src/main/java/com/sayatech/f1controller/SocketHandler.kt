@@ -41,7 +41,6 @@ class SocketHandler(
 
     private fun sendMessage(data: String) {
         GlobalScope.launch(Dispatchers.IO) {
-            println(data)
             val buffer = data.toByteArray()
             val packet = DatagramPacket(
                 buffer,
@@ -70,7 +69,6 @@ class SocketHandler(
     }
 
     fun orientationChange(d: Double, a: Float) {
-        println(a)
         sendMessage("$ORIENTATION_KEY,$d,$ACCELERATION_KEY,$a,")
     }
 }

@@ -8,29 +8,27 @@ import android.os.Bundle
 import android.view.MotionEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Divider
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sayatech.f1controller.ui.theme.F1ControllerTheme
 import com.sayatech.f1controller.views.ConnectionDialog
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -38,6 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(DelicateCoroutinesApi::class, ExperimentalComposeUiApi::class)
 class MainActivity : ComponentActivity() {
@@ -56,7 +55,7 @@ class MainActivity : ComponentActivity() {
             F1ControllerTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFF000000)
+                    color = Color(0xFF050505)
                 ) {
                     UserInterface()
                 }
@@ -76,28 +75,16 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun UserInterface() {
-        val dialogStatus = remember {
-            mutableStateOf(true)
-        }
-        val progressState = remember {
-            mutableStateOf(false)
-        }
+        val dialogStatus = remember { mutableStateOf(true) }
+        
         if (this::socketHandler.isInitialized && dialogStatus.value) {
             if (socketHandler.getStatus() == ConnectionStatus.NOT_CONNECTED) {
                 ConnectionDialog(
                     onConnectClicked = {
-                        progressState.value = true
                         GlobalScope.launch(Dispatchers.IO) {
                             val connection = async { socketHandler.connect() }
                             val status = connection.await()
-                            socketHandler.setStatus(
-                                if (status) {
-                                    ConnectionStatus.CONNECTED
-                                }
-                                else {
-                                    ConnectionStatus.NOT_CONNECTED
-                                }
-                            )
+                            socketHandler.setStatus(if (status) ConnectionStatus.CONNECTED else ConnectionStatus.NOT_CONNECTED)
                             registerOrientationListener()
                             dialogStatus.value = false
                         }
@@ -124,123 +111,202 @@ class MainActivity : ComponentActivity() {
                     width = it.size.width.toFloat()
                 },
         ) {
+            // Left: BRAKE (37.5%)
+            PedalBox(
+                label = "BRAKE",
+                modifier = Modifier.fillMaxHeight().weight(0.375f)
+            )
+
+            // Center: DPAD over Face Buttons (25%)
             Column(
-                modifier = Modifier
-                    .fillMaxWidth(fraction = 0.15f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxHeight().weight(0.25f),
+                verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextButton(
-                    onClick = {},
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(1f)
-                ) {
-                    Text(text = "Kers")
+                // DPAD Stack
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                    Row(modifier = Modifier.height(44.dp)) {
+                        Spacer(Modifier.width(44.dp))
+                        ControlButton("▲", Modifier.size(44.dp))
+                        Spacer(Modifier.width(44.dp))
+                    }
+                    Row(modifier = Modifier.height(44.dp)) {
+                        ControlButton("◀", Modifier.size(44.dp))
+                        Spacer(Modifier.width(44.dp))
+                        ControlButton("▶", Modifier.size(44.dp))
+                    }
+                    Row(modifier = Modifier.height(44.dp)) {
+                        Spacer(Modifier.width(44.dp))
+                        ControlButton("▼", Modifier.size(44.dp))
+                        Spacer(Modifier.width(44.dp))
+                    }
                 }
-                TextButton(
-                    onClick = {},
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(1f)
-                ) {
-                    Text(text = "DRS")
+
+                // Face Buttons Stack
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                    Row(modifier = Modifier.height(44.dp)) {
+                        Spacer(Modifier.width(44.dp))
+                        ControlButton("△", Modifier.size(44.dp))
+                        Spacer(Modifier.width(44.dp))
+                    }
+                    Row(modifier = Modifier.height(44.dp)) {
+                        ControlButton("□", Modifier.size(44.dp))
+                        Spacer(Modifier.width(44.dp))
+                        ControlButton("○", Modifier.size(44.dp))
+                    }
+                    Row(modifier = Modifier.height(44.dp)) {
+                        Spacer(Modifier.width(44.dp))
+                        ControlButton("✕", Modifier.size(44.dp))
+                        Spacer(Modifier.width(44.dp))
+                    }
                 }
             }
-            Divider(
-                color = Color.White,
-                modifier = Modifier
-                    .fillMaxHeight()  //fill the max height
-                    .width(1.dp)
+
+            // Right: THROTTLE (37.5%)
+            PedalBox(
+                label = "THROTTLE",
+                modifier = Modifier.fillMaxHeight().weight(0.375f)
             )
-            TextButton(
-                onClick = {},
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(3f)
-            ) {
-                Text(text = "Brake")
-            }
-            TextButton(
-                onClick = {},
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(3f)
-            ) {
-                Text(text = "Accelerate")
-            }
+        }
+    }
+
+    @Composable
+    fun PedalBox(label: String, modifier: Modifier) {
+        Box(
+            modifier = modifier
+                .padding(16.dp)
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.08f),
+                            Color.White.copy(alpha = 0.02f)
+                        )
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .border(
+                    width = 1.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.2f),
+                            Color.White.copy(alpha = 0.05f)
+                        )
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = label,
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Thin,
+                letterSpacing = 10.sp
+            )
+        }
+    }
+
+    @Composable
+    fun ControlButton(label: String, modifier: Modifier) {
+        Box(
+            modifier = modifier
+                .padding(4.dp)
+                .background(
+                    color = Color.White.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .border(
+                    width = 0.5.dp,
+                    color = Color.White.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(12.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = label,
+                color = Color.White.copy(alpha = 0.5f),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Light
+            )
         }
     }
 
     private fun handlePress(event: MotionEvent) {
-        when(event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                val index = getIdFromCoordinates(PointF(event.x, event.y), true)
-                if (index != ACC) {
-                    socketHandler.buttonPress(
-                        index,
-                        true
-                    )
-                } else {
-                    updateAcceleration(PointF(event.x, event.y))
+        val action = event.actionMasked
+        val pointerIndex = event.actionIndex
+
+        when(action) {
+            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                val point = PointF(event.getX(pointerIndex), event.getY(pointerIndex))
+                val index = getIdFromCoordinates(point, true)
+                if (index != 0) {
+                    if (index != ACC) {
+                        socketHandler.buttonPress(index, true)
+                    } else {
+                        updateAcceleration(point)
+                    }
                 }
             }
-            MotionEvent.ACTION_UP -> {
-                val index = getIdFromCoordinates(PointF(event.x, event.y), false)
-                socketHandler.buttonPress(
-                    index,
-                    false
-                )
-            }
-            MotionEvent.ACTION_POINTER_DOWN -> {
-                val index = getIdFromCoordinates(
-                    PointF(
-                        event.getX(event.actionIndex),
-                        event.getY(event.actionIndex)
-                    ), true
-                )
-                socketHandler.buttonPress(
-                    index,
-                    true
-                )
-            }
-            MotionEvent.ACTION_POINTER_UP -> {
-                val index = getIdFromCoordinates(
-                    PointF(
-                        event.getX(event.actionIndex),
-                        event.getY(event.actionIndex)
-                    ), false
-                )
-                socketHandler.buttonPress(
-                    index,
-                    false
-                )
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+                val point = PointF(event.getX(pointerIndex), event.getY(pointerIndex))
+                val index = getIdFromCoordinates(point, false)
+                if (index != 0) {
+                    socketHandler.buttonPress(index, false)
+                    if (index == ACC) accelerationValue = 0f
+                }
             }
             MotionEvent.ACTION_MOVE -> {
-                updateAcceleration(PointF(event.x, event.y))
+                for (i in 0 until event.pointerCount) {
+                    val point = PointF(event.getX(i), event.getY(i))
+                    if (point.x >= 0.625 * width) {
+                        updateAcceleration(point)
+                    }
+                }
             }
         }
     }
 
     private fun getIdFromCoordinates(point: PointF, state: Boolean): Int {
-        return if (point.x < 0.15 * width) {
-            if (point.y < 0.5 * height) {
-                KERS
+        if (point.x < 0.375 * width) {
+            // Brake
+            return BRAKE
+        } else if (point.x < 0.625 * width) {
+            // Center (DPAD on top of Face Buttons)
+            val relativeX = (point.x - 0.375 * width) / (0.25 * width)
+            val col = (relativeX * 3).toInt().coerceIn(0, 2)
+            
+            if (point.y < height / 2) {
+                // DPAD
+                val row = (point.y / (height / 6)).toInt().coerceIn(0, 2)
+                return when (row) {
+                    0 -> if (col == 1) DPAD_UP else 0
+                    1 -> when(col) {
+                        0 -> DPAD_LEFT
+                        2 -> DPAD_RIGHT
+                        else -> 0
+                    }
+                    2 -> if (col == 1) DPAD_DOWN else 0
+                    else -> 0
+                }
             } else {
-                DRS
+                // Face Buttons
+                val relativeY = point.y - height / 2
+                val row = (relativeY / (height / 6)).toInt().coerceIn(0, 2)
+                return when (row) {
+                    0 -> if (col == 1) TRI_BUTTON else 0
+                    1 -> when(col) {
+                        0 -> SQ_BUTTON
+                        2 -> CIR_BUTTON
+                        else -> 0
+                    }
+                    2 -> if (col == 1) X_BUTTON else 0
+                    else -> 0
+                }
             }
         } else {
-            if (point.x < ((1 - 0.15) / 2 * width)) {
-                BRAKE
-            } else {
-                accelerationValue = if (state) {
-                    1.000f
-                } else {
-                    0.000f
-                }
-                ACC
-            }
+            // Throttle
+            accelerationValue = if (state) 1.000f else 0.000f
+            return ACC
         }
     }
 
@@ -261,42 +327,25 @@ class MainActivity : ComponentActivity() {
     }
 
     private val accelerationCallback: () -> Float = {
-        Math.round(accelerationValue * 1000.0) / 1000.0f
+        (accelerationValue * 1000).roundToInt() / 1000f
     }
 
     private fun registerOrientationListener() {
         if (socketHandler.getStatus() == ConnectionStatus.CONNECTED) {
-            sensorManager.registerListener(
-                sensorChannel,
-                sensor,
-                SensorManager.SENSOR_DELAY_GAME
-            )
+            sensorManager.registerListener(sensorChannel, sensor, SensorManager.SENSOR_DELAY_GAME)
         }
     }
 
     private fun unRegisterOrientationListener() {
         if (socketHandler.getStatus() == ConnectionStatus.CONNECTED) {
-            try {
-                sensorManager.unregisterListener(sensorChannel)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            try { sensorManager.unregisterListener(sensorChannel) } catch (_: Exception) {}
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        registerOrientationListener()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        unRegisterOrientationListener()
-    }
+    override fun onResume() { super.onResume() ; registerOrientationListener() }
+    override fun onPause() { super.onPause() ; unRegisterOrientationListener() }
 
     @Preview(showBackground = true, device = Devices.AUTOMOTIVE_1024p, widthDp = 720, heightDp = 360)
     @Composable
-    fun User() {
-        UserInterface()
-    }
+    fun User() { UserInterface() }
 }
